@@ -16,6 +16,7 @@ public class Day02 {
     String gamesString = Utils.readInput(2).trim();
 
     System.out.println("Part 1: " + sumPossibleGames(gamesString));
+    System.out.println("Part 2: " + sumPowers(gamesString));
   }
 
   public static long sumPossibleGames(String gamesString) {
@@ -77,6 +78,24 @@ public class Day02 {
     return reveal.numRed() <= 12 &&
         reveal.numGreen() <= 13 &&
         reveal.numBlue() <= 14;
+  }
+
+  static long sumPowers(String gamesString) {
+    return gamesString.lines().map(Day02::parseGame).mapToLong(Day02::calculateMinimumPower).sum();
+  }
+
+  private static long calculateMinimumPower(Game game) {
+    int minRed = 0;
+    int minGreen = 0;
+    int minBlue = 0;
+
+    for (Reveal reveal : game.reveals()) {
+      minRed = Math.max(minRed, reveal.numRed());
+      minGreen = Math.max(minGreen, reveal.numGreen());
+      minBlue = Math.max(minBlue, reveal.numBlue());
+    }
+
+    return (long) minRed * minGreen * minBlue;
   }
 
   record Game(int id, List<Reveal> reveals) {}
