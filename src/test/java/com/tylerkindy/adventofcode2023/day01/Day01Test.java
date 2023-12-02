@@ -26,4 +26,28 @@ class Day01Test {
     assertThat(Day01.parseLine("a1b2c3d4e5f")).isEqualTo(15);
     assertThat(Day01.parseLine("treb7uchet")).isEqualTo(77);
   }
+
+  @Test
+  void itSumsCorrectCalibrationValues() {
+    assertThat(
+            Day01.sumCorrectCalibrationValues(
+                """
+                two1nine
+                eightwothree
+                abcone2threexyz
+                xtwone3four
+                4nineeightseven2
+                zoneight234
+                7pqrstsixteen
+                """))
+        .isEqualTo(281);
+  }
+
+  @Test
+  void itParsesLineCorrectly() {
+    assertThat(Day01.parseLineCorrectly("two1nine")).isEqualTo(29);
+    assertThat(Day01.parseLineCorrectly("eightwothree")).isEqualTo(83);
+    assertThat(Day01.parseLineCorrectly("7pqrstsixteen")).isEqualTo(76);
+    assertThat(Day01.parseLineCorrectly("4nineeightseven2")).isEqualTo(42);
+  }
 }

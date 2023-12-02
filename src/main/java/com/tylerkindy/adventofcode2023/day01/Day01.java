@@ -4,12 +4,18 @@ import com.google.common.io.Resources;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Day01 {
+  private static final Pattern DIGIT =
+      Pattern.compile("[0-9]|one|two|three|four|five|six|seven|eight|nine");
+
   public static void main(String[] args) {
     String document = readInput().trim();
 
     System.out.println("Part 1: " + sumCalibrationValues(document));
+    System.out.println("Part 2: " + sumCorrectCalibrationValues(document));
   }
 
   static long sumCalibrationValues(String document) {
@@ -36,6 +42,39 @@ public class Day01 {
     }
 
     return Integer.parseInt("" + first + last);
+  }
+
+  static long sumCorrectCalibrationValues(String document) {
+    return document.lines().mapToInt(Day01::parseLineCorrectly).sum();
+  }
+
+  static int parseLineCorrectly(String line) {
+    Matcher matcher = DIGIT.matcher(line);
+    matcher.find();
+
+    int start = parseDigit(matcher.group());
+
+    int end = start;
+    while (matcher.find()) {
+      end = parseDigit(matcher.group());
+    }
+
+    return start * 10 + end;
+  }
+
+  private static int parseDigit(String digit) {
+    return switch (digit) {
+      case "one" -> 1;
+      case "two" -> 2;
+      case "three" -> 3;
+      case "four" -> 4;
+      case "five" -> 5;
+      case "six" -> 6;
+      case "seven" -> 7;
+      case "eight" -> 8;
+      case "nine" -> 9;
+      default -> Integer.parseInt(digit);
+    };
   }
 
   private static String readInput() {
