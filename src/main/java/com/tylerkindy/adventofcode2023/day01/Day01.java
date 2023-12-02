@@ -1,9 +1,6 @@
 package com.tylerkindy.adventofcode2023.day01;
 
-import com.google.common.io.Resources;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
+import com.tylerkindy.adventofcode2023.Utils;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,7 +9,7 @@ public class Day01 {
       Pattern.compile("[1-9]|one|two|three|four|five|six|seven|eight|nine");
 
   public static void main(String[] args) {
-    String document = readInput().trim();
+    String document = Utils.readInput(1).trim();
 
     System.out.println("Part 1: " + sumCalibrationValues(document));
     System.out.println("Part 2: " + sumCorrectCalibrationValues(document));
@@ -77,13 +74,5 @@ public class Day01 {
       case "nine" -> 9;
       default -> Integer.parseInt(digit);
     };
-  }
-
-  private static String readInput() {
-    try {
-      return Resources.toString(Resources.getResource("input/day01.txt"), StandardCharsets.UTF_8);
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
   }
 }
