@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 public class Day01 {
   private static final Pattern DIGIT =
-      Pattern.compile("[0-9]|one|two|three|four|five|six|seven|eight|nine");
+      Pattern.compile("[1-9]|one|two|three|four|five|six|seven|eight|nine");
 
   public static void main(String[] args) {
     String document = readInput().trim();
@@ -55,8 +55,10 @@ public class Day01 {
     int start = parseDigit(matcher.group());
 
     int end = start;
-    while (matcher.find()) {
+    int startIndex = matcher.start() + 1;
+    while (matcher.find(startIndex)) {
       end = parseDigit(matcher.group());
+      startIndex = matcher.start() + 1;
     }
 
     return start * 10 + end;

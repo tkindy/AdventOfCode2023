@@ -49,5 +49,7 @@ class Day01Test {
     assertThat(Day01.parseLineCorrectly("eightwothree")).isEqualTo(83);
     assertThat(Day01.parseLineCorrectly("7pqrstsixteen")).isEqualTo(76);
     assertThat(Day01.parseLineCorrectly("4nineeightseven2")).isEqualTo(42);
+    assertThat(Day01.parseLineCorrectly("zoneight234")).isEqualTo(14);
+    assertThat(Day01.parseLineCorrectly("oneight")).isEqualTo(18);
   }
 }
