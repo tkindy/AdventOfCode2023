@@ -2,6 +2,8 @@ package com.tylerkindy.adventofcode2023.day03;
 
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
@@ -19,9 +21,10 @@ public class Day03 {
   private static final Pattern SYMBOL = Pattern.compile("[^\\d.]");
 
   public static void main(String[] args) {
-    String schematic = Utils.readInput(3).trim();
+    Schematic schematic = parseSchematic(Utils.readInput(3).trim());
 
     System.out.println("Part 1: " + sumPartNumbers(schematic));
+    System.out.println("Part 2: " + sumGearRatios(schematic));
   }
 
   public static long sumPartNumbers(String schematic) {
@@ -32,11 +35,20 @@ public class Day03 {
     return schematic.partNumbers().stream().mapToLong(partNumber -> partNumber).sum();
   }
 
+  public static long sumGearRatios(String schematic) {
+    return sumGearRatios(parseSchematic(schematic));
+  }
+
+  private static long sumGearRatios(Schematic schematic) {
+    return schematic.gears().stream().mapToLong(Gear::ratio).sum();
+  }
+
   private static Schematic parseSchematic(String schematic) {
     List<String> lines = Arrays.asList(schematic.split("\n"));
 
     Set<SchematicNumber> schematicNumbers = new HashSet<>();
     Set<Point> symbolLocations = new HashSet<>();
+    Set<Point> potentialGearLocations = new HashSet<>();
 
     for (int y = 0; y < lines.size(); y++) {
       String line = lines.get(y);
@@ -54,26 +66,46 @@ public class Day03 {
 
       Matcher symbolMatcher = SYMBOL.matcher(line);
       while (symbolMatcher.find()) {
-        symbolLocations.add(new Point(symbolMatcher.start(), y));
+        Point point = new Point(symbolMatcher.start(), y);
+        symbolLocations.add(point);
+
+        if (symbolMatcher.group().equals("*")) {
+          potentialGearLocations.add(point);
+        }
       }
     }
 
     ImmutableMultiset.Builder<Integer> partNumbers = ImmutableMultiset.builder();
+    ListMultimap<Point, SchematicNumber> adjacentToParts = MultimapBuilder
+      .hashKeys()
+      .arrayListValues()
+      .build();
+
     for (SchematicNumber schematicNumber : schematicNumbers) {
-      SetView<Point> matchingSymbols = Sets.intersection(
-        schematicNumber.span().boundaryPoints(),
-        symbolLocations
-      );
+      Set<Point> boundary = schematicNumber.span().boundaryPoints();
+      boundary.forEach(point -> adjacentToParts.put(point, schematicNumber));
+
+      SetView<Point> matchingSymbols = Sets.intersection(boundary, symbolLocations);
 
       if (!matchingSymbols.isEmpty()) {
         partNumbers.add(schematicNumber.number());
       }
     }
 
-    return new Schematic(partNumbers.build());
+    ImmutableMultiset.Builder<Gear> gears = ImmutableMultiset.builder();
+    for (Point potentialGearLocation : potentialGearLocations) {
+      List<SchematicNumber> adjacent = adjacentToParts.get(potentialGearLocation);
+      if (adjacent.size() != 2) {
+        continue;
+      }
+
+      gears.add(new Gear(adjacent.get(0), adjacent.get(1)));
+    }
+
+    return new Schematic(partNumbers.build(), gears.build());
   }
 
-  public record Schematic(Multiset<Integer> partNumbers) {}
+  public record Schematic(Multiset<Integer> partNumbers, Multiset<Gear> gears) {}
 
   record SchematicNumber(int number, Span span) {}
 
@@ -93,6 +125,12 @@ public class Day03 {
       }
 
       return points.build();
+    }
+  }
+
+  record Gear(SchematicNumber partA, SchematicNumber partB) {
+    long ratio() {
+      return (long) partA.number() * partB.number();
     }
   }
 }

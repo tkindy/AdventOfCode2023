@@ -25,4 +25,24 @@ class Day03Test {
     )
       .isEqualTo(4361);
   }
+
+  @Test
+  void itSumsGearRatios() {
+    assertThat(
+      Day03.sumGearRatios(
+        """
+        467..114..
+        ...*......
+        ..35..633.
+        ......#...
+        617*......
+        .....+.58.
+        ..592.....
+        ......755.
+        ...$.*....
+        .664.598.."""
+      )
+    )
+      .isEqualTo(467835);
+  }
 }
