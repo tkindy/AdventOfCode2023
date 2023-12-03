@@ -5,8 +5,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Day01 {
-  private static final Pattern DIGIT =
-      Pattern.compile("[1-9]|one|two|three|four|five|six|seven|eight|nine");
+
+  private static final Pattern DIGIT = Pattern.compile(
+    "[1-9]|one|two|three|four|five|six|seven|eight|nine"
+  );
 
   public static void main(String[] args) {
     String document = Utils.readInput(1).trim();

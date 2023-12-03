@@ -9,8 +9,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Day02 {
-  private static final Pattern GAME_LINE = Pattern.compile("Game (?<id>\\d+): (?<reveals>.*)");
-  private static final Pattern REVEAL_PART = Pattern.compile("(?<count>\\d+) (?<color>red|green|blue)");
+
+  private static final Pattern GAME_LINE = Pattern.compile(
+    "Game (?<id>\\d+): (?<reveals>.*)"
+  );
+  private static final Pattern REVEAL_PART = Pattern.compile(
+    "(?<count>\\d+) (?<color>red|green|blue)"
+  );
 
   public static void main(String[] args) {
     String gamesString = Utils.readInput(2).trim();
@@ -21,11 +26,11 @@ public class Day02 {
 
   public static long sumPossibleGames(String gamesString) {
     return gamesString
-        .lines()
-        .map(Day02::parseGame)
-        .filter(Day02::isPossibleGame)
-        .mapToLong(Game::id)
-        .sum();
+      .lines()
+      .map(Day02::parseGame)
+      .filter(Day02::isPossibleGame)
+      .mapToLong(Game::id)
+      .sum();
   }
 
   private static Game parseGame(String gameLine) {
@@ -35,8 +40,10 @@ public class Day02 {
     int id = Integer.parseInt(matcher.group("id"));
     String revealsStr = matcher.group("reveals");
 
-    List<Reveal> reveals = Arrays.stream(revealsStr.split(";"))
-        .map(reveal -> parseReveal(reveal.trim())).toList();
+    List<Reveal> reveals = Arrays
+      .stream(revealsStr.split(";"))
+      .map(reveal -> parseReveal(reveal.trim()))
+      .toList();
 
     return new Game(id, reveals);
   }
@@ -67,21 +74,23 @@ public class Day02 {
 
   private static boolean isPossibleGame(Game game) {
     return game
-        .reveals()
-        .stream()
-        .filter(not(Day02::isPossibleReveal))
-        .findAny()
-        .isEmpty();
+      .reveals()
+      .stream()
+      .filter(not(Day02::isPossibleReveal))
+      .findAny()
+      .isEmpty();
   }
 
   private static boolean isPossibleReveal(Reveal reveal) {
-    return reveal.numRed() <= 12 &&
-        reveal.numGreen() <= 13 &&
-        reveal.numBlue() <= 14;
+    return (reveal.numRed() <= 12 && reveal.numGreen() <= 13 && reveal.numBlue() <= 14);
   }
 
   static long sumPowers(String gamesString) {
-    return gamesString.lines().map(Day02::parseGame).mapToLong(Day02::calculateMinimumPower).sum();
+    return gamesString
+      .lines()
+      .map(Day02::parseGame)
+      .mapToLong(Day02::calculateMinimumPower)
+      .sum();
   }
 
   private static long calculateMinimumPower(Game game) {
@@ -99,5 +108,6 @@ public class Day02 {
   }
 
   record Game(int id, List<Reveal> reveals) {}
+
   record Reveal(int numRed, int numGreen, int numBlue) {}
 }

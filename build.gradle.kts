@@ -23,6 +23,19 @@ tasks.test {
 
 spotless {
   java {
-      googleJavaFormat()
+      prettier(
+          mapOf(
+              "prettier" to "3.1.0",
+              "prettier-plugin-java" to "2.5.0"
+          )
+      )
+          .config(
+              mapOf(
+                  "parser" to "java",
+                  "tabWidth" to 2,
+                  "printWidth" to 90,
+                  "plugins" to listOf("prettier-plugin-java")
+              )
+          )
   }
 }
