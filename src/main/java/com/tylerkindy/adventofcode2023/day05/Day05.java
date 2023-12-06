@@ -1,38 +1,55 @@
 package com.tylerkindy.adventofcode2023.day05;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Range;
+import com.google.common.collect.*;
 import com.tylerkindy.adventofcode2023.Utils;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 public class Day05 {
 
   private static final Pattern NUMBER = Pattern.compile("\\b(?<number>\\d+)\\b");
+  private static final Pattern SEED_RANGE = Pattern.compile(
+    "(?<start>\\d+) (?<length>\\d+)"
+  );
   private static final Pattern MAP_HEADER = Pattern.compile(
     "(?<src>\\w+)-to-(?<dest>\\w+) map:"
   );
 
   public static void main(String[] args) {
-    Almanac almanac = parseAlmanac(Utils.readInput(5));
+    String input = Utils.readInput(5);
 
-    System.out.println("Part 1: " + lowestLocationNumber(almanac));
+    System.out.println("Part 1: " + lowestLocationNumber(parseAlmanacV1(input)));
+    System.out.println("Part 2: " + lowestLocationNumber(parseAlmanacV2(input)));
   }
 
-  public static Almanac parseAlmanac(String input) {
+  public static Almanac parseAlmanacV1(String input) {
+    return parseAlmanac(input, Day05::parseSeedsV1);
+  }
+
+  public static Almanac parseAlmanacV2(String input) {
+    return parseAlmanac(input, Day05::parseSeedsV2);
+  }
+
+  private static Almanac parseAlmanac(
+    String input,
+    Function<String, Iterable<Long>> seedsParser
+  ) {
     List<String> blocks = Arrays.asList(input.split("\n\n"));
 
-    Set<Long> seeds = parseSeeds(blocks.getFirst());
+    Iterable<Long> seeds = seedsParser.apply(blocks.getFirst());
     List<CategoryMap> maps = parseMaps(blocks.subList(1, blocks.size()));
 
     return new Almanac(seeds, maps);
   }
 
-  private static Set<Long> parseSeeds(String seedsBlock) {
+  private static Set<Long> parseSeedsV1(String seedsBlock) {
     ImmutableSet.Builder<Long> seeds = ImmutableSet.builder();
 
     Matcher matcher = NUMBER.matcher(seedsBlock);
@@ -42,6 +59,28 @@ public class Day05 {
 
     return seeds.build();
   }
+
+  private static Iterable<Long> parseSeedsV2(String seedsBlock) {
+    Multiset<SeedRange> ranges = HashMultiset.create();
+
+    Matcher matcher = SEED_RANGE.matcher(seedsBlock);
+    while (matcher.find()) {
+      long start = Long.parseLong(matcher.group("start"));
+      long length = Long.parseLong(matcher.group("length"));
+
+      ranges.add(new SeedRange(start, length));
+    }
+
+    return () ->
+      ranges
+        .stream()
+        .flatMapToLong(range ->
+          LongStream.range(range.start(), range.start() + range.length)
+        )
+        .iterator();
+  }
+
+  private record SeedRange(long start, long length) {}
 
   private static List<CategoryMap> parseMaps(List<String> mapBlocks) {
     return mapBlocks.stream().map(Day05::parseMap).toList();
@@ -86,9 +125,8 @@ public class Day05 {
       .map(CategoryMapper::new)
       .toList();
 
-    return almanac
-      .seeds()
-      .stream()
+    return Streams
+      .stream(almanac.seeds())
       .mapToLong(seed -> {
         long number = seed;
         for (CategoryMapper mapper : mappers) {
@@ -100,7 +138,7 @@ public class Day05 {
       .orElseThrow();
   }
 
-  public record Almanac(Set<Long> seeds, List<CategoryMap> maps) {}
+  public record Almanac(Iterable<Long> seeds, List<CategoryMap> maps) {}
 
   record CategoryMap(
     String srcCategory,
