@@ -1,16 +1,17 @@
 package com.tylerkindy.adventofcode2023.day05;
 
-import com.google.common.collect.*;
+import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
 import com.tylerkindy.adventofcode2023.Utils;
-
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.LongStream;
 
 public class Day05 {
 
@@ -39,48 +40,42 @@ public class Day05 {
 
   private static Almanac parseAlmanac(
     String input,
-    Function<String, Iterable<Long>> seedsParser
+    Function<String, Set<Range<Long>>> seedsParser
   ) {
     List<String> blocks = Arrays.asList(input.split("\n\n"));
 
-    Iterable<Long> seeds = seedsParser.apply(blocks.getFirst());
+    Set<Range<Long>> seeds = seedsParser.apply(blocks.getFirst());
     List<CategoryMap> maps = parseMaps(blocks.subList(1, blocks.size()));
 
     return new Almanac(seeds, maps);
   }
 
-  private static Set<Long> parseSeedsV1(String seedsBlock) {
-    ImmutableSet.Builder<Long> seeds = ImmutableSet.builder();
+  private static Set<Range<Long>> parseSeedsV1(String seedsBlock) {
+    ImmutableSet.Builder<Range<Long>> seeds = ImmutableSet.builder();
 
     Matcher matcher = NUMBER.matcher(seedsBlock);
     while (matcher.find()) {
-      seeds.add(Long.parseLong(matcher.group("number")));
+      long number = Long.parseLong(matcher.group("number"));
+
+      seeds.add(Range.singleton(number));
     }
 
     return seeds.build();
   }
 
-  private static Iterable<Long> parseSeedsV2(String seedsBlock) {
-    Multiset<SeedRange> ranges = HashMultiset.create();
+  private static Set<Range<Long>> parseSeedsV2(String seedsBlock) {
+    ImmutableSet.Builder<Range<Long>> ranges = ImmutableSet.builder();
 
     Matcher matcher = SEED_RANGE.matcher(seedsBlock);
     while (matcher.find()) {
       long start = Long.parseLong(matcher.group("start"));
       long length = Long.parseLong(matcher.group("length"));
 
-      ranges.add(new SeedRange(start, length));
+      ranges.add(Range.closedOpen(start, start + length));
     }
 
-    return () ->
-      ranges
-        .stream()
-        .flatMapToLong(range ->
-          LongStream.range(range.start(), range.start() + range.length)
-        )
-        .iterator();
+    return ranges.build();
   }
-
-  private record SeedRange(long start, long length) {}
 
   private static List<CategoryMap> parseMaps(List<String> mapBlocks) {
     return mapBlocks.stream().map(Day05::parseMap).toList();
@@ -119,26 +114,25 @@ public class Day05 {
   }
 
   public static long lowestLocationNumber(Almanac almanac) {
-    List<CategoryMapper> mappers = almanac
-      .maps()
-      .stream()
-      .map(CategoryMapper::new)
-      .toList();
+    List<CategoryMapper> mappers = mappers(almanac);
 
-    return Streams
-      .stream(almanac.seeds())
-      .mapToLong(seed -> {
-        long number = seed;
-        for (CategoryMapper mapper : mappers) {
-          number = mapper.map(number);
-        }
-        return number;
-      })
-      .min()
-      .orElseThrow();
+    Set<Range<Long>> ranges = almanac.seedRanges();
+    for (CategoryMapper mapper : mappers) {
+      ranges =
+        ranges
+          .stream()
+          .flatMap(range -> mapper.map(range).stream())
+          .collect(Collectors.toSet());
+    }
+
+    return ranges.stream().mapToLong(Range::lowerEndpoint).min().orElseThrow();
   }
 
-  public record Almanac(Iterable<Long> seeds, List<CategoryMap> maps) {}
+  public static List<CategoryMapper> mappers(Almanac almanac) {
+    return almanac.maps().stream().map(CategoryMapper::new).toList();
+  }
+
+  public record Almanac(Set<Range<Long>> seedRanges, List<CategoryMap> maps) {}
 
   record CategoryMap(
     String srcCategory,
@@ -148,12 +142,12 @@ public class Day05 {
 
   record CategoryMapRange(long srcStart, long destStart, long length) {}
 
-  static class CategoryMapper {
+  public static class CategoryMapper {
 
-    private final Set<MappingRange> ranges;
+    private final Set<MappingRange> mappingRanges;
 
     CategoryMapper(CategoryMap map) {
-      this.ranges =
+      this.mappingRanges =
         map
           .ranges()
           .stream()
@@ -166,13 +160,26 @@ public class Day05 {
           .collect(Collectors.toSet());
     }
 
-    public long map(long number) {
-      return ranges
+    public Set<Range<Long>> map(Range<Long> range) {
+      return mappingRanges
         .stream()
-        .filter(range -> range.srcRange().contains(number))
-        .findAny()
-        .map(range -> number + range.delta())
-        .orElse(number);
+        .map(mappingRange -> {
+          if (!range.isConnected(mappingRange.srcRange())) {
+            return Optional.<Range<Long>>empty();
+          }
+          Range<Long> intersection = range
+            .intersection(mappingRange.srcRange())
+            .canonical(DiscreteDomain.longs());
+
+          return Optional.of(
+            Range.closedOpen(
+              intersection.lowerEndpoint() + mappingRange.delta(),
+              intersection.upperEndpoint() + mappingRange.delta()
+            )
+          );
+        })
+        .flatMap(Optional::stream)
+        .collect(Collectors.toSet());
     }
 
     private record MappingRange(Range<Long> srcRange, long delta) {}
