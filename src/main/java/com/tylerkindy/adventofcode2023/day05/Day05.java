@@ -118,14 +118,17 @@ public class Day05 {
 
     Set<Range<Long>> ranges = almanac.seedRanges();
     for (CategoryMapper mapper : mappers) {
-      ranges =
-        ranges
-          .stream()
-          .flatMap(range -> mapper.map(range).stream())
-          .collect(Collectors.toSet());
+      ranges = mapOnce(mapper, ranges);
     }
 
     return ranges.stream().mapToLong(Range::lowerEndpoint).min().orElseThrow();
+  }
+
+  public static Set<Range<Long>> mapOnce(CategoryMapper mapper, Set<Range<Long>> ranges) {
+    return ranges
+      .stream()
+      .flatMap(range -> mapper.map(range).stream())
+      .collect(Collectors.toSet());
   }
 
   public static List<CategoryMapper> mappers(Almanac almanac) {
