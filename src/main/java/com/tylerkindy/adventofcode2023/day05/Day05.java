@@ -58,7 +58,7 @@ public class Day05 {
     while (matcher.find()) {
       long number = Long.parseLong(matcher.group("number"));
 
-      seeds.add(Range.singleton(number));
+      seeds.add(Range.singleton(number).canonical(DiscreteDomain.longs()));
     }
 
     return seeds.build();
