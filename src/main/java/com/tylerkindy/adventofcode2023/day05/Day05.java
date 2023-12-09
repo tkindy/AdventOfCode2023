@@ -164,6 +164,10 @@ public class Day05 {
             .intersection(mappingRange.srcRange())
             .canonical(DiscreteDomain.longs());
 
+          if (intersection.isEmpty()) {
+            return Optional.<Range<Long>>empty();
+          }
+
           return Optional.of(
             Range.closedOpen(
               intersection.lowerEndpoint() + mappingRange.delta(),
