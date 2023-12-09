@@ -11,11 +11,14 @@ import java.util.regex.Pattern;
 public class Day06 {
 
   private static final Pattern NUMBER = Pattern.compile("\\d+");
+  private static final Pattern NUMBER_WITH_WHITESPACE = Pattern.compile("[\\d\\s]+");
 
   public static void main(String[] args) {
     List<Race> races = parseRaces(Utils.readInput(6));
-
     System.out.println("Part 1: " + winProduct(races));
+
+    Race oneLongRace = parseOneLongRace(Utils.readInput(6));
+    System.out.println("Part 2: " + calculateWinCount(oneLongRace));
   }
 
   public static List<Race> parseRaces(String input) {
@@ -42,6 +45,26 @@ public class Day06 {
       .stream()
       .mapToLong(Day06::calculateWinCount)
       .reduce(1, (l1, l2) -> l1 * l2);
+  }
+
+  private static Race parseOneLongRace(String input) {
+    String[] lines = input.trim().split("\n");
+
+    Matcher timeMatcher = NUMBER_WITH_WHITESPACE.matcher(lines[0]);
+    timeMatcher.find();
+
+    Duration duration = Duration.ofMillis(
+      Long.parseLong(timeMatcher.group().replaceAll("\\s", ""))
+    );
+
+    Matcher distanceMatcher = NUMBER_WITH_WHITESPACE.matcher(lines[1]);
+    distanceMatcher.find();
+
+    Distance recordDistance = Distance.ofMillimeters(
+      Long.parseLong(distanceMatcher.group().replaceAll("\\s", ""))
+    );
+
+    return new Race(duration, recordDistance);
   }
 
   public static long calculateWinCount(Race race) {
