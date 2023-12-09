@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.tylerkindy.adventofcode2023.Utils;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -90,13 +91,31 @@ public class Day05 {
       throw new IllegalArgumentException("Unexpected block header: " + header);
     }
 
-    Set<CategoryMapping> mappings = lines
+    List<CategoryMapping> listedMappings = lines
       .subList(1, lines.size())
       .stream()
       .map(Day05::parseCategoryMapping)
-      .collect(Collectors.toSet());
+      .sorted(Comparator.comparing(mapping -> mapping.srcRange().lowerEndpoint()))
+      .toList();
 
-    return new CategoryMap(mappings);
+    ImmutableSet.Builder<CategoryMapping> mappings = ImmutableSet
+      .<CategoryMapping>builder()
+      .addAll(listedMappings);
+
+    mappings.add(
+      new CategoryMapping(
+        Range.lessThan(listedMappings.getFirst().srcRange().lowerEndpoint()),
+        0
+      )
+    );
+    mappings.add(
+      new CategoryMapping(
+        Range.atLeast(listedMappings.getLast().srcRange().upperEndpoint()),
+        0
+      )
+    );
+
+    return new CategoryMap(mappings.build());
   }
 
   private static CategoryMapping parseCategoryMapping(String line) {

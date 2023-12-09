@@ -94,7 +94,7 @@ class Day05Test {
   }
 
   @Test
-  void itParsesSeeds() {
+  void itParsesSeedsV2() {
     Almanac almanac = Day05.parseAlmanacV2(
       """
       seeds: 79 14 55 13
@@ -177,7 +177,7 @@ class Day05Test {
 
     assertThat(almanac.categoryMaps().getFirst().mappings())
       .containsOnly(
-        new CategoryMapping(Range.atMost(50L), 0),
+        new CategoryMapping(Range.lessThan(50L), 0),
         new CategoryMapping(Range.closedOpen(50L, 98L), 2),
         new CategoryMapping(Range.closedOpen(98L, 100L), -48),
         new CategoryMapping(Range.atLeast(100L), 0)
