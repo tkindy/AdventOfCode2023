@@ -2,13 +2,8 @@ package com.tylerkindy.adventofcode2023.day05;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
 import com.tylerkindy.adventofcode2023.day05.Day05.Almanac;
-import com.tylerkindy.adventofcode2023.day05.Day05.CategoryMap;
-import com.tylerkindy.adventofcode2023.day05.Day05.CategoryMapRange;
-import com.tylerkindy.adventofcode2023.day05.Day05.CategoryMapper;
-import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class Day05Test {
@@ -53,23 +48,6 @@ class Day05Test {
     );
 
     assertThat(Day05.lowestLocationNumber(almanac)).isEqualTo(35);
-  }
-
-  @Test
-  void itMaps() {
-    CategoryMapper mapper = new CategoryMapper(
-      new CategoryMap(
-        "seed",
-        "soil",
-        Set.of(new CategoryMapRange(98, 50, 2), new CategoryMapRange(50, 52, 48))
-      )
-    );
-
-    assertThat(mapper.map(Range.singleton(79L)))
-      .isEqualTo(Set.of(Range.singleton(81L).canonical(DiscreteDomain.longs())));
-    //    assertThat(mapper.map(14)).isEqualTo(14);
-    //    assertThat(mapper.map(55)).isEqualTo(57);
-    //    assertThat(mapper.map(13)).isEqualTo(13);
   }
 
   @Test
@@ -154,9 +132,6 @@ class Day05Test {
     );
 
     assertThat(almanac.seedRanges())
-      .containsOnly(
-        Range.closedOpen(55L, 68L),
-        Range.closedOpen(79L, 93L)
-      );
+      .containsOnly(Range.closedOpen(55L, 68L), Range.closedOpen(79L, 93L));
   }
 }

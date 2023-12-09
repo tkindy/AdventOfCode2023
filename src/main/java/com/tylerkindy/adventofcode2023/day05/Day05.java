@@ -90,81 +90,52 @@ public class Day05 {
       throw new IllegalArgumentException("Unexpected block header: " + header);
     }
 
-    Set<CategoryMapRange> ranges = lines
+    Set<CategoryMapping> mappings = lines
       .subList(1, lines.size())
       .stream()
-      .map(Day05::parseMapRange)
+      .map(Day05::parseCategoryMapping)
       .collect(Collectors.toSet());
 
-    return new CategoryMap(
-      headerMatcher.group("src"),
-      headerMatcher.group("dest"),
-      ranges
-    );
+    return new CategoryMap(mappings);
   }
 
-  private static CategoryMapRange parseMapRange(String line) {
+  private static CategoryMapping parseCategoryMapping(String line) {
     List<String> numbers = Arrays.asList(line.split(" "));
 
-    return new CategoryMapRange(
-      Long.parseLong(numbers.get(1)),
-      Long.parseLong(numbers.get(0)),
-      Long.parseLong(numbers.get(2))
+    long srcStart = Long.parseLong(numbers.get(1));
+    long destStart = Long.parseLong(numbers.get(0));
+    long length = Long.parseLong(numbers.get(2));
+
+    return new CategoryMapping(
+      Range.closedOpen(srcStart, srcStart + length),
+      destStart - srcStart
     );
   }
 
   public static long lowestLocationNumber(Almanac almanac) {
-    List<CategoryMapper> mappers = mappers(almanac);
-
     Set<Range<Long>> ranges = almanac.seedRanges();
-    for (CategoryMapper mapper : mappers) {
-      ranges = mapOnce(mapper, ranges);
+    for (CategoryMap categoryMap : almanac.categoryMaps()) {
+      ranges = mapOnce(categoryMap, ranges);
     }
 
     return ranges.stream().mapToLong(Range::lowerEndpoint).min().orElseThrow();
   }
 
-  public static Set<Range<Long>> mapOnce(CategoryMapper mapper, Set<Range<Long>> ranges) {
+  public static Set<Range<Long>> mapOnce(
+    CategoryMap categoryMap,
+    Set<Range<Long>> ranges
+  ) {
     return ranges
       .stream()
-      .flatMap(range -> mapper.map(range).stream())
+      .flatMap(range -> categoryMap.map(range).stream())
       .collect(Collectors.toSet());
   }
 
-  public static List<CategoryMapper> mappers(Almanac almanac) {
-    return almanac.maps().stream().map(CategoryMapper::new).toList();
-  }
+  public record Almanac(Set<Range<Long>> seedRanges, List<CategoryMap> categoryMaps) {}
 
-  public record Almanac(Set<Range<Long>> seedRanges, List<CategoryMap> maps) {}
-
-  record CategoryMap(
-    String srcCategory,
-    String destCategory,
-    Set<CategoryMapRange> ranges
-  ) {}
-
-  record CategoryMapRange(long srcStart, long destStart, long length) {}
-
-  public static class CategoryMapper {
-
-    private final Set<MappingRange> mappingRanges;
-
-    CategoryMapper(CategoryMap map) {
-      this.mappingRanges =
-        map
-          .ranges()
-          .stream()
-          .map(range ->
-            new MappingRange(
-              Range.closedOpen(range.srcStart(), range.srcStart() + range.length()),
-              range.destStart() - range.srcStart()
-            )
-          )
-          .collect(Collectors.toSet());
-    }
-
+  public record CategoryMap(Set<CategoryMapping> mappings) {
     public Set<Range<Long>> map(Range<Long> range) {
-      return mappingRanges
+      return mappings
         .stream()
         .map(mappingRange -> {
           if (!range.isConnected(mappingRange.srcRange())) {
@@ -184,7 +155,7 @@ public class Day05 {
         .flatMap(Optional::stream)
         .collect(Collectors.toSet());
     }
-
-    private record MappingRange(Range<Long> srcRange, long delta) {}
   }
+
+  record CategoryMapping(Range<Long> srcRange, long delta) {}
 }
