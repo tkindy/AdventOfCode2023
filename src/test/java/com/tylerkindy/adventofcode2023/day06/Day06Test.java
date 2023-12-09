@@ -27,4 +27,18 @@ class Day06Test {
         )
       );
   }
+
+  @Test
+  void itFindsWinProduct() {
+    assertThat(
+      Day06.winProduct(
+        Day06.parseRaces(
+          """
+          Time:      7  15   30
+          Distance:  9  40  200"""
+        )
+      )
+    )
+      .isEqualTo(288L);
+  }
 }

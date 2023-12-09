@@ -14,6 +14,8 @@ public class Day06 {
 
   public static void main(String[] args) {
     List<Race> races = parseRaces(Utils.readInput(6));
+
+    System.out.println("Part 1: " + winProduct(races));
   }
 
   public static List<Race> parseRaces(String input) {
@@ -33,6 +35,10 @@ public class Day06 {
     }
 
     return races.build();
+  }
+
+  public static long winProduct(List<Race> races) {
+    return 0;
   }
 
   private static List<Long> parseLine(String line) {
