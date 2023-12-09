@@ -38,7 +38,36 @@ public class Day06 {
   }
 
   public static long winProduct(List<Race> races) {
-    return 0;
+    return races
+      .stream()
+      .mapToLong(Day06::calculateWinCount)
+      .reduce(1, (l1, l2) -> l1 * l2);
+  }
+
+  public static long calculateWinCount(Race race) {
+    long durationMillis = race.duration().toMillis();
+
+    // Quadratic formula
+    double sqrt = Math.sqrt(
+      Math.pow(durationMillis, 2) - 4 * race.recordDistance().toMillimeters()
+    );
+
+    double plusRoot = (-1 * durationMillis + sqrt) / (-2);
+    double minusRoot = (-1 * durationMillis - sqrt) / (-2);
+
+    double leftRoot = Math.min(plusRoot, minusRoot);
+    double leftRootCeil = Math.ceil(leftRoot);
+    long minHoldTime = (long) (leftRootCeil == leftRoot
+        ? leftRootCeil + 1
+        : leftRootCeil);
+
+    double rightRoot = Math.max(plusRoot, minusRoot);
+    double rightRootFloor = Math.floor(rightRoot);
+    long maxHoldTime = (long) (rightRootFloor == rightRoot
+        ? rightRootFloor - 1
+        : rightRootFloor);
+
+    return maxHoldTime - minHoldTime + 1;
   }
 
   private static List<Long> parseLine(String line) {
@@ -64,6 +93,10 @@ public class Day06 {
 
     public static Distance ofMillimeters(long millimeters) {
       return new Distance(millimeters);
+    }
+
+    public long toMillimeters() {
+      return millimeters;
     }
 
     @Override

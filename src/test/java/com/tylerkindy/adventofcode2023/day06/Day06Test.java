@@ -41,4 +41,22 @@ class Day06Test {
     )
       .isEqualTo(288L);
   }
+
+  @Test
+  void itCalculatesWinCounts() {
+    assertThat(
+      Day06.calculateWinCount(new Race(Duration.ofMillis(7), Distance.ofMillimeters(9)))
+    )
+      .isEqualTo(4);
+    assertThat(
+      Day06.calculateWinCount(new Race(Duration.ofMillis(15), Distance.ofMillimeters(40)))
+    )
+      .isEqualTo(8);
+    assertThat(
+      Day06.calculateWinCount(
+        new Race(Duration.ofMillis(30), Distance.ofMillimeters(200))
+      )
+    )
+      .isEqualTo(9);
+  }
 }
