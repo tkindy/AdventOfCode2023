@@ -64,4 +64,21 @@ class Day07Test {
         new HandAndBid(new Hand(List.of(QUEEN, QUEEN, QUEEN, JACK, ACE)), 483)
       );
   }
+
+  @Test
+  void itCalculatesTotalWinnings() {
+    assertThat(
+      Day07.calculateTotalWinnings(
+        Day07.parseHandsAndBids(
+          """
+          32T3K 765
+          T55J5 684
+          KK677 28
+          KTJJT 220
+          QQQJA 483"""
+        )
+      )
+    )
+      .isEqualTo(6440L);
+  }
 }

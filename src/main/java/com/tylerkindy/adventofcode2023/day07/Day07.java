@@ -16,6 +16,8 @@ public class Day07 {
 
   public static void main(String[] args) {
     Multiset<HandAndBid> handsAndBids = parseHandsAndBids(Utils.readInput(7));
+
+    System.out.println("Part 1: " + calculateTotalWinnings(handsAndBids));
   }
 
   public static Multiset<HandAndBid> parseHandsAndBids(String input) {
@@ -39,6 +41,20 @@ public class Day07 {
 
   private static Hand parseHand(String handStr) {
     return new Hand(handStr.chars().mapToObj(Card::fromLabel).toList());
+  }
+
+  public static long calculateTotalWinnings(Multiset<HandAndBid> handsAndBids) {
+    List<HandAndBid> sortedHands = handsAndBids.stream().sorted().toList();
+
+    long total = 0;
+    for (int i = 0; i < sortedHands.size(); i++) {
+      HandAndBid handAndBid = sortedHands.get(i);
+      long rank = i + 1;
+
+      total += ((long) handAndBid.bid()) * rank;
+    }
+
+    return total;
   }
 
   public record HandAndBid(Hand hand, int bid) implements Comparable<HandAndBid> {
