@@ -3,6 +3,7 @@ package com.tylerkindy.adventofcode2023.day07;
 import static com.tylerkindy.adventofcode2023.day07.Day07.Card.ACE;
 import static com.tylerkindy.adventofcode2023.day07.Day07.Card.FIVE;
 import static com.tylerkindy.adventofcode2023.day07.Day07.Card.JACK;
+import static com.tylerkindy.adventofcode2023.day07.Day07.Card.JOKER;
 import static com.tylerkindy.adventofcode2023.day07.Day07.Card.KING;
 import static com.tylerkindy.adventofcode2023.day07.Day07.Card.QUEEN;
 import static com.tylerkindy.adventofcode2023.day07.Day07.Card.SEVEN;
@@ -14,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tylerkindy.adventofcode2023.day07.Day07.Hand;
 import com.tylerkindy.adventofcode2023.day07.Day07.HandAndBid;
+import com.tylerkindy.adventofcode2023.day07.Day07.Part;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +30,8 @@ class Day07Test {
         T55J5 684
         KK677 28
         KTJJT 220
-        QQQJA 483"""
+        QQQJA 483""",
+        Part.PART1
       )
     )
       .containsExactlyInAnyOrder(
@@ -50,7 +53,8 @@ class Day07Test {
           T55J5 684
           KK677 28
           KTJJT 220
-          QQQJA 483"""
+          QQQJA 483""",
+          Part.PART1
         )
         .stream()
         .sorted()
@@ -75,10 +79,33 @@ class Day07Test {
           T55J5 684
           KK677 28
           KTJJT 220
-          QQQJA 483"""
+          QQQJA 483""",
+          Part.PART1
         )
       )
     )
       .isEqualTo(6440L);
+  }
+
+  @Test
+  void itParsesHandsV2() {
+    assertThat(
+        Day07.parseHandsAndBids(
+            """
+            32T3K 765
+            T55J5 684
+            KK677 28
+            KTJJT 220
+            QQQJA 483""",
+            Part.PART2
+        )
+    )
+        .containsExactlyInAnyOrder(
+            new HandAndBid(new Hand(List.of(THREE, TWO, TEN, THREE, KING)), 765),
+            new HandAndBid(new Hand(List.of(TEN, FIVE, FIVE, JOKER, FIVE)), 684),
+            new HandAndBid(new Hand(List.of(KING, KING, SIX, SEVEN, SEVEN)), 28),
+            new HandAndBid(new Hand(List.of(KING, TEN, JOKER, JOKER, TEN)), 220),
+            new HandAndBid(new Hand(List.of(QUEEN, QUEEN, QUEEN, JOKER, ACE)), 483)
+        );
   }
 }

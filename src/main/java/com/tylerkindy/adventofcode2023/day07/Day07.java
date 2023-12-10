@@ -15,32 +15,36 @@ public class Day07 {
   );
 
   public static void main(String[] args) {
-    Multiset<HandAndBid> handsAndBids = parseHandsAndBids(Utils.readInput(7));
+    String input = Utils.readInput(7);
 
-    System.out.println("Part 1: " + calculateTotalWinnings(handsAndBids));
+    System.out.println(
+      "Part 1: " + calculateTotalWinnings(parseHandsAndBids(input, Part.PART1))
+    );
   }
 
-  public static Multiset<HandAndBid> parseHandsAndBids(String input) {
+  public static Multiset<HandAndBid> parseHandsAndBids(String input, Part part) {
     return input
       .lines()
-      .map(Day07::parseHandAndBid)
+      .map(line -> parseHandAndBid(line, part))
       .collect(ImmutableMultiset.toImmutableMultiset());
   }
 
-  private static HandAndBid parseHandAndBid(String line) {
+  private static HandAndBid parseHandAndBid(String line, Part part) {
     Matcher matcher = HAND_AND_BID.matcher(line);
     if (!matcher.matches()) {
       throw new IllegalArgumentException("Unexpected hand and bid line: " + line);
     }
 
-    Hand hand = parseHand(matcher.group("hand"));
+    Hand hand = parseHand(matcher.group("hand"), part);
     int bid = Integer.parseInt(matcher.group("bid"));
 
     return new HandAndBid(hand, bid);
   }
 
-  private static Hand parseHand(String handStr) {
-    return new Hand(handStr.chars().mapToObj(Card::fromLabel).toList());
+  private static Hand parseHand(String handStr, Part part) {
+    return new Hand(
+      handStr.chars().mapToObj((int label) -> Card.fromLabel(label, part)).toList()
+    );
   }
 
   public static long calculateTotalWinnings(Multiset<HandAndBid> handsAndBids) {
@@ -123,6 +127,7 @@ public class Day07 {
   }
 
   public enum Card {
+    JOKER,
     TWO,
     THREE,
     FOUR,
@@ -137,7 +142,7 @@ public class Day07 {
     KING,
     ACE;
 
-    public static Card fromLabel(int label) {
+    static Card fromLabel(int label, Part part) {
       return switch (label) {
         case '2' -> TWO;
         case '3' -> THREE;
@@ -148,12 +153,17 @@ public class Day07 {
         case '8' -> EIGHT;
         case '9' -> NINE;
         case 'T' -> TEN;
-        case 'J' -> JACK;
+        case 'J' -> part == Part.PART1 ? JACK : JOKER;
         case 'Q' -> QUEEN;
         case 'K' -> KING;
         case 'A' -> ACE;
         default -> throw new IllegalArgumentException("Unexpected card label: " + label);
       };
     }
+  }
+
+  public enum Part {
+    PART1,
+    PART2,
   }
 }
