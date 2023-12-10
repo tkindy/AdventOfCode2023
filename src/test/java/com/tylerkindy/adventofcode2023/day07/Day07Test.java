@@ -39,4 +39,29 @@ class Day07Test {
         new HandAndBid(new Hand(List.of(QUEEN, QUEEN, QUEEN, JACK, ACE)), 483)
       );
   }
+
+  @Test
+  void itSortsHands() {
+    assertThat(
+      Day07
+        .parseHandsAndBids(
+          """
+          32T3K 765
+          T55J5 684
+          KK677 28
+          KTJJT 220
+          QQQJA 483"""
+        )
+        .stream()
+        .sorted()
+        .toList()
+    )
+      .containsExactly(
+        new HandAndBid(new Hand(List.of(THREE, TWO, TEN, THREE, KING)), 765),
+        new HandAndBid(new Hand(List.of(KING, TEN, JACK, JACK, TEN)), 220),
+        new HandAndBid(new Hand(List.of(KING, KING, SIX, SEVEN, SEVEN)), 28),
+        new HandAndBid(new Hand(List.of(TEN, FIVE, FIVE, JACK, FIVE)), 684),
+        new HandAndBid(new Hand(List.of(QUEEN, QUEEN, QUEEN, JACK, ACE)), 483)
+      );
+  }
 }

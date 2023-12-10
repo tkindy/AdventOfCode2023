@@ -2,6 +2,7 @@ package com.tylerkindy.adventofcode2023.day07;
 
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 import com.tylerkindy.adventofcode2023.Utils;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -40,46 +41,101 @@ public class Day07 {
     return new Hand(handStr.chars().mapToObj(Card::fromLabel).toList());
   }
 
-  public record HandAndBid(Hand hand, int bid) {}
+  public record HandAndBid(Hand hand, int bid) implements Comparable<HandAndBid> {
+    @Override
+    public int compareTo(HandAndBid o) {
+      return hand.compareTo(o.hand);
+    }
+  }
 
-  public record Hand(List<Card> cards) {}
+  public record Hand(List<Card> cards) implements Comparable<Hand> {
+    public HandType type() {
+      Multiset<Integer> counts = ImmutableMultiset
+        .copyOf(cards)
+        .entrySet()
+        .stream()
+        .map(Entry::getCount)
+        .collect(ImmutableMultiset.toImmutableMultiset());
+
+      if (counts.equals(ImmutableMultiset.of(5))) {
+        return HandType.FIVE_OF_A_KIND;
+      }
+      if (counts.equals(ImmutableMultiset.of(4, 1))) {
+        return HandType.FOUR_OF_A_KIND;
+      }
+      if (counts.equals(ImmutableMultiset.of(3, 2))) {
+        return HandType.FULL_HOUSE;
+      }
+      if (counts.equals(ImmutableMultiset.of(3, 1, 1))) {
+        return HandType.THREE_OF_A_KIND;
+      }
+      if (counts.equals(ImmutableMultiset.of(2, 2, 1))) {
+        return HandType.TWO_PAIR;
+      }
+      if (counts.equals(ImmutableMultiset.of(2, 1, 1, 1))) {
+        return HandType.ONE_PAIR;
+      }
+      return HandType.HIGH_CARD;
+    }
+
+    @Override
+    public int compareTo(Hand o) {
+      int typeComparison = type().compareTo(o.type());
+      if (typeComparison != 0) {
+        return typeComparison;
+      }
+
+      for (int i = 0; i < cards.size(); i++) {
+        int cardComparison = cards.get(i).compareTo(o.cards().get(i));
+        if (cardComparison != 0) {
+          return cardComparison;
+        }
+      }
+
+      return 0;
+    }
+  }
+
+  public enum HandType {
+    HIGH_CARD,
+    ONE_PAIR,
+    TWO_PAIR,
+    THREE_OF_A_KIND,
+    FULL_HOUSE,
+    FOUR_OF_A_KIND,
+    FIVE_OF_A_KIND,
+  }
 
   public enum Card {
-    ACE(12),
-    KING(11),
-    QUEEN(10),
-    JACK(9),
-    TEN(8),
-    NINE(7),
-    EIGHT(6),
-    SEVEN(5),
-    SIX(4),
-    FIVE(3),
-    FOUR(2),
-    THREE(1),
-    TWO(0);
-
-    private final int rank;
-
-    Card(int rank) {
-      this.rank = rank;
-    }
+    TWO,
+    THREE,
+    FOUR,
+    FIVE,
+    SIX,
+    SEVEN,
+    EIGHT,
+    NINE,
+    TEN,
+    JACK,
+    QUEEN,
+    KING,
+    ACE;
 
     public static Card fromLabel(int label) {
       return switch (label) {
-        case 'A' -> ACE;
-        case 'K' -> KING;
-        case 'Q' -> QUEEN;
-        case 'J' -> JACK;
-        case 'T' -> TEN;
-        case '9' -> NINE;
-        case '8' -> EIGHT;
-        case '7' -> SEVEN;
-        case '6' -> SIX;
-        case '5' -> FIVE;
-        case '4' -> FOUR;
-        case '3' -> THREE;
         case '2' -> TWO;
+        case '3' -> THREE;
+        case '4' -> FOUR;
+        case '5' -> FIVE;
+        case '6' -> SIX;
+        case '7' -> SEVEN;
+        case '8' -> EIGHT;
+        case '9' -> NINE;
+        case 'T' -> TEN;
+        case 'J' -> JACK;
+        case 'Q' -> QUEEN;
+        case 'K' -> KING;
+        case 'A' -> ACE;
         default -> throw new IllegalArgumentException("Unexpected card label: " + label);
       };
     }
