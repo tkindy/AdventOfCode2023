@@ -20,6 +20,9 @@ public class Day07 {
     System.out.println(
       "Part 1: " + calculateTotalWinnings(parseHandsAndBids(input, Part.PART1))
     );
+    System.out.println(
+      "Part 2: " + calculateTotalWinnings(parseHandsAndBids(input, Part.PART2))
+    );
   }
 
   public static Multiset<HandAndBid> parseHandsAndBids(String input, Part part) {
@@ -70,32 +73,38 @@ public class Day07 {
 
   public record Hand(List<Card> cards) implements Comparable<Hand> {
     public HandType type() {
-      Multiset<Integer> counts = ImmutableMultiset
-        .copyOf(cards)
+      Multiset<Card> allCards = ImmutableMultiset.copyOf(cards);
+      int numJokers = allCards.count(Card.JOKER);
+
+      Multiset<Integer> counts = allCards
         .entrySet()
         .stream()
+        .filter(entry -> entry.getElement() != Card.JOKER)
         .map(Entry::getCount)
         .collect(ImmutableMultiset.toImmutableMultiset());
 
-      if (counts.equals(ImmutableMultiset.of(5))) {
+      if (counts.isEmpty() || counts.equals(ImmutableMultiset.of(5 - numJokers))) {
         return HandType.FIVE_OF_A_KIND;
       }
-      if (counts.equals(ImmutableMultiset.of(4, 1))) {
+      if (counts.equals(ImmutableMultiset.of(4 - numJokers, 1))) {
         return HandType.FOUR_OF_A_KIND;
       }
-      if (counts.equals(ImmutableMultiset.of(3, 2))) {
+      if (counts.equals(ImmutableMultiset.of(3 - numJokers, 2))) {
         return HandType.FULL_HOUSE;
       }
-      if (counts.equals(ImmutableMultiset.of(3, 1, 1))) {
+      if (counts.equals(ImmutableMultiset.of(3 - numJokers, 1, 1))) {
         return HandType.THREE_OF_A_KIND;
       }
       if (counts.equals(ImmutableMultiset.of(2, 2, 1))) {
         return HandType.TWO_PAIR;
       }
-      if (counts.equals(ImmutableMultiset.of(2, 1, 1, 1))) {
+      if (counts.equals(ImmutableMultiset.of(2 - numJokers, 1, 1, 1))) {
         return HandType.ONE_PAIR;
       }
-      return HandType.HIGH_CARD;
+      if (counts.equals(ImmutableMultiset.of(1, 1, 1, 1, 1))) {
+        return HandType.HIGH_CARD;
+      }
+      throw new IllegalStateException("Failed to match hand type for " + cards);
     }
 
     @Override
